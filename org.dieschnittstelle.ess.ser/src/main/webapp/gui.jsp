@@ -8,13 +8,17 @@
 <% Logger logger = org.apache.logging.log4j.LogManager
 		.getLogger("org.dieschnittstelle.ess.ser#gui.jsp"); %>
 <!-- check whether a redirect shall be initiated, in which case we will not generate markup -->
-<% if (request.getAttribute("redirectToRoot") != null)
+<%
+	String basecontext = request.getContextPath() + "/";
+
+	if (request.getAttribute("redirectToRoot") != null)
 {
 	logger.info("will initiate a redirect, skip markup generation");
-	response.sendRedirect("/org.dieschnittstelle.ess.ser/");
+	response.sendRedirect(basecontext);
 }
 else {
 	logger.info("will generate markup");
+	boolean demoGetIdempotence = request.getAttribute("demoGetIdempotence") != null;
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -24,18 +28,18 @@ else {
 </head>
 <body>
 	<!--  print out the class hierarchy -->
-	<%=this%>
+<%--	<%=this%>--%>
 	<br />
-	<%
-		Class klass = this.getClass();
-		String tabs = "";
-		do {
-	%><%=tabs + klass%><br />
-	<%
-		klass = klass.getSuperclass();
-			tabs += "\t";
-		} while (klass != null);
-	%>
+<%--	<%--%>
+<%--		Class klass = this.getClass();--%>
+<%--		String tabs = "";--%>
+<%--		do {--%>
+<%--	%><%=tabs + klass%><br />--%>
+<%--	<%--%>
+<%--		klass = klass.getSuperclass();--%>
+<%--			tabs += "\t";--%>
+<%--		} while (klass != null);--%>
+<%--	%>--%>
 
 	<!--  access session attributes and their constituents -->
 	<h3>SER Touchpoints</h3>
@@ -70,8 +74,7 @@ else {
 							.getCity()%></td>
 			<td>
 				<!--  we add a delete button -->
-				<form method="POST"
-					action="gui/touchpoints/delete/<%=touchpoint.getId()%>">
+				<form method="POST" action="<%=basecontext%>gui/touchpoints/delete/<%=touchpoint.getId()%>">
 					<input type="submit" value="delete">
 				</form>
 			</td>
@@ -83,7 +86,7 @@ else {
 	</table>
 	<!--  create a new touchpoint -->
 	<h3>New Touchpoint</h3>
-	<form method="POST" action="gui/touchpoints/create/">
+	<form method="<%=(demoGetIdempotence ? "GET" : "POST")%>" action="<%=basecontext%>gui/touchpoints/create/">
 		<table>
 			<tr>
 				<td>Name:</td>

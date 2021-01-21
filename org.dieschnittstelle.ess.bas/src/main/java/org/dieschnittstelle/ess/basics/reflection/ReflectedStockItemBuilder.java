@@ -1,5 +1,6 @@
 package org.dieschnittstelle.ess.basics.reflection;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,11 +17,7 @@ import java.lang.reflect.Method;
 
 import static org.dieschnittstelle.ess.utils.Utils.*;
 
-/*
- * tries to instantiate a stock item from an xml element, assuming that
- * attribute names from the xml representation coincide with attribute
- * names on the class to be instantiated
- */
+// this builder only reads in the item
 public class ReflectedStockItemBuilder implements IStockItemBuilder {
 
 	protected static Logger logger = LogManager
@@ -43,69 +40,63 @@ public class ReflectedStockItemBuilder implements IStockItemBuilder {
 							.getTextContent();
 					String elementName = ((Element) children.item(i))
 							.getTagName();
-					logger.debug("found element {} with content: {}", elementName, elementContent);
+					logger.debug("found element " + elementName
+							+ " with content: " + elementContent);
 					instanceAttributes.put(elementName, elementContent);
 				} else {
 					// logger.debug("found node " + children.item(i)
 					// + " of class " + children.item(i).getClass());
 				}
 			}
-			
 
-			
 			logger.info("read out child elements and values: " + instanceAttributes);
 
-			// try to obtain the class given the classname and create an
-			// instance of it
-			Class<?> klass = Class.forName(instanceAttributes.get("class"));
-			IStockItem instance = (IStockItem) klass.newInstance();
+			IStockItem instance = null;
+			// determine the classname from the instance attributes
+			String klassname = instanceAttributes.get("class");
+			show("klassname: %s", klassname);
 
-//			for (Field field : klass.getDeclaredFields()) {
-//				show("found field: " + field.getClass() + " of name " + field.getName());
-//			}
-//			
-//			for (Method method : klass.getDeclaredMethods()) {
-//				show("found method: " + method.getClass() + " of name " + method.getName());
-//			}
-						
-			instance.initialise(Integer.parseInt(instanceAttributes.get("units")),
-					instanceAttributes.get("brandname"));
-			
-			/**
-			 * fuegen Sie hier die Erweiterungen fuer Uebungsaufgabe BAS1 ein
-			 */
-			
+			// access the class
+			Class klass = Class.forName(klassname);
+			show("klass: %s", klass);
+
+			// create the instance
+			instance = (IStockItem)klass.getConstructor(new Class[]{}).newInstance();
+			show("created instance: %s", instance);
+
+			// call initialise method
+			instance.initialise(Integer.parseInt(instanceAttributes.get("units")),instanceAttributes.get("brandname"));
+
+			// remove all attributes that have been processed so far
 			instanceAttributes.remove("class");
 			instanceAttributes.remove("brandname");
 			instanceAttributes.remove("units");
 
-			for (String key : instanceAttributes.keySet()) {
+			// iterate over the so far unprocessed attributes
+			for (String xmlAttr : instanceAttributes.keySet()) {
+				String value = instanceAttributes.get(xmlAttr);
+				show("set: %s=%s", xmlAttr, instanceAttributes.get(xmlAttr));
+
+				// determine the field object for the attribute
+				Field f = klass.getDeclaredField(xmlAttr);
+
 				// determine the name of the setter
-				String setterName = "set" + key.substring(0,1).toUpperCase() + key.substring(1);
-				Method setterMethod = null;
-				// iterate over the methods
-				for (Method setter: klass.getDeclaredMethods()) {
-					if (setterName.equals(setter.getName())) {
-						setterMethod = setter;
-					}
-				}
-				
-				logger.info("found setter: " + setterMethod);
-				// check the type
-				Class<?> type = setterMethod.getParameterTypes()[0];
-				if (type != String.class) {
-					if (type == Integer.TYPE) {
-						setterMethod.invoke(instance,Integer.parseInt(instanceAttributes.get(key)));
-					}
-					else {
-						logger.error("cannot handle type: " + type);
-					}
+				String settername = getAccessorNameForField("set",f.getName());
+
+				// declare the argument types of the setter
+				Class[] setterargs = new Class[]{f.getType()};
+				// obtain the setter
+				Method setter = klass.getDeclaredMethod(settername,setterargs);
+
+				// invoke the setter
+				if (f.getType() == Integer.TYPE) {
+					setter.invoke(instance,Integer.parseInt(value));
 				}
 				else {
-					setterMethod.invoke(instance,instanceAttributes.get(key));
+					setter.invoke(instance,value);
 				}
+
 			}
-			
 			// and pass back the instance
 			return (IStockItem)instance;
 		} catch (ClassNotFoundException e) {
@@ -119,17 +110,16 @@ public class ReflectedStockItemBuilder implements IStockItemBuilder {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			logger.error("got Exception: " + e, e);
-			throw new RuntimeException(e);		
-		} 
+			throw new RuntimeException(e);
+		}
 
 	}
-	
+
 	/*
 	 * create getter/setter names
 	 */
 	public static String getAccessorNameForField(String accessor,String fieldName) {
-		return accessor + fieldName.substring(0,1).toUpperCase() + fieldName.substring(1); 
+		return accessor + fieldName.substring(0,1).toUpperCase() + fieldName.substring(1);
 	}
-
 
 }

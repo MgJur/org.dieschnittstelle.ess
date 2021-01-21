@@ -26,6 +26,11 @@ public class TouchpointCRUDServiceImplAsync {
 
 	private ITouchpointCRUDService service;
 
+	// default constructor to satisfy IDEA...
+	public TouchpointCRUDServiceImplAsync() {
+
+	}
+
 	/**
 	 * here we will be passed the context parameters by the resteasy framework
 	 */

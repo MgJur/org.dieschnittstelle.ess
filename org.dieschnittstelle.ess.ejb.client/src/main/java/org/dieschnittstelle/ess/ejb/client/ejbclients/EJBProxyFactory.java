@@ -1,10 +1,13 @@
 package org.dieschnittstelle.ess.ejb.client.ejbclients;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.Logger;
 import org.dieschnittstelle.ess.ejb.client.Constants;
 import org.dieschnittstelle.ess.entities.crm.AbstractTouchpoint;
 import org.dieschnittstelle.ess.entities.erp.AbstractProduct;
+import org.jboss.resteasy.annotations.ClientResponseType;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -12,7 +15,11 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.io.FileInputStream;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
+import javax.ws.rs.client.ClientResponseContext;
+import javax.ws.rs.client.ClientResponseFilter;
+import java.io.*;
 import java.util.Properties;
 
 import static org.dieschnittstelle.ess.utils.Utils.show;
@@ -27,6 +34,33 @@ import static org.dieschnittstelle.ess.utils.Utils.show;
  * realised as singleton
  */
 public class EJBProxyFactory {
+
+    /*
+     * this filter logs the raw response body data
+     */
+    public static class LoggingFilter implements ClientResponseFilter {
+
+        @Override
+        public void filter(ClientRequestContext clientRequestContext, ClientResponseContext clientResponseContext) throws IOException {
+            if (clientResponseContext.hasEntity()) {
+                // we need to copy the original input stream because, once read, it will not be available to further processing anymore
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                clientResponseContext.getEntityStream().transferTo(baos);
+                // this copy of the stream will be used for logging
+                InputStream dataForLogging = new ByteArrayInputStream(baos.toByteArray());
+                // this copy will be used for further processing, i.e. it will be re-set on the response context
+                InputStream dataForFurtherProcessing = new ByteArrayInputStream(baos.toByteArray());
+                clientResponseContext.setEntityStream(dataForFurtherProcessing);
+
+                if (clientResponseContext.getStatus() != HttpStatus.SC_OK && clientResponseContext.getStatus() != HttpStatus.SC_CREATED && clientResponseContext.getStatus() != HttpStatus.SC_ACCEPTED) {
+                    logger.error("got response body for status " + clientResponseContext.getStatus() +  ": " + IOUtils.toString(dataForLogging));
+                }
+                else {
+                    logger.info("got response body for status " + clientResponseContext.getStatus() +  ": " + IOUtils.toString(dataForLogging));
+                }
+            }
+        }
+    }
 
     protected static Logger logger = org.apache.logging.log4j.LogManager.getLogger(EJBProxyFactory.class);
 
@@ -123,7 +157,7 @@ public class EJBProxyFactory {
             this.jndiContext = new InitialContext();
 
             // this is the webAPI instantiation - here, we hard-code the baseUrl for the webAPI, could be passed as an argument, though
-            ResteasyClient client = new ResteasyClientBuilder().build();
+            ResteasyClient client = new ResteasyClientBuilder().register(new LoggingFilter()).build();
             this.webAPI = client.target(webAPIBaseUrl);
         } catch (Exception e) {
             throw new EJBProxyException("got exception trying to instantiate proxy factory: " + e, e);
