@@ -3,6 +3,7 @@ package org.dieschnittstelle.ess.ejb.ejbmodule.erp.crud;
 import java.util.List;
 
 import javax.ejb.Local;
+import javax.ejb.Stateless;
 
 import org.dieschnittstelle.ess.entities.erp.IndividualisedProductItem;
 import org.dieschnittstelle.ess.entities.erp.PointOfSale;
@@ -13,6 +14,8 @@ import org.dieschnittstelle.ess.entities.erp.StockItem;
  * this interface shall be implemented using a stateless EJB with an EntityManager.
  * See the comments below for hints at how to implement the methods
  */
+
+@Local
 public interface StockItemCRUDLocal {
 
     /*

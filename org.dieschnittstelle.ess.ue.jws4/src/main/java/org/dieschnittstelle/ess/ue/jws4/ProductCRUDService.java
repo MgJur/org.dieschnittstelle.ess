@@ -9,7 +9,8 @@ import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.servlet.ServletContext;
-import javax.ws.rs.GET;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
@@ -25,26 +26,46 @@ import org.dieschnittstelle.ess.entities.erp.ProductType;
  *  die Umetzung der Methoden die Instanz von GenericCRUDExecutor<AbstractProduct>,
  *  die Sie aus dem ServletContext auslesen koennen
  */
+
+@WebService(targetNamespace = "http://dieschnittstelle.org/ess/jws",serviceName = "ProductCRUDWebService", name = "IProductCRUDService", portName = "ProductCRUDPort")
+@SOAPBinding
 public class ProductCRUDService {
 
-	public List<AbstractProduct> readAllProducts() {
-		return new ArrayList();
+	@Resource
+	private WebServiceContext wsContext;
+
+	private ServletContext initServletContext() {
+		MessageContext msgContext = wsContext.getMessageContext();
+		return (ServletContext) msgContext.get(MessageContext.SERVLET_CONTEXT);
 	}
+
+	private GenericCRUDExecutor<AbstractProduct> getExec() {
+		ServletContext servletContext = initServletContext();
+		return (GenericCRUDExecutor<AbstractProduct>) servletContext.getAttribute("productCRUD");
+	}
+
+
+	public List<AbstractProduct> readAllProducts() {
+		return (List) getExec().readAllObjects();
+	}
+
 
 	public AbstractProduct createProduct(AbstractProduct product) {
-		return product;
+		return (AbstractProduct) getExec().createObject(product);
 	}
+
 
 	public AbstractProduct updateProduct(AbstractProduct update) {
-		return update;
+		return (AbstractProduct) getExec().updateObject(update);
 	}
 
+
 	public boolean deleteProduct(long id) {
-		return false;
+		return getExec().deleteObject(id);
 	}
 
 	public AbstractProduct readProduct(long id) {
-		return null;
+		return (AbstractProduct) getExec().readObject(id);
 	}
 
 }

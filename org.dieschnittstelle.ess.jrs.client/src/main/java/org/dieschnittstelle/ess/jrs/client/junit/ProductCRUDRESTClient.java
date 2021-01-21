@@ -7,6 +7,9 @@ import org.dieschnittstelle.ess.entities.erp.AbstractProduct;
 import org.dieschnittstelle.ess.entities.erp.IndividualisedProductItem;
 
 import org.dieschnittstelle.ess.jrs.IProductCRUDService;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 public class ProductCRUDRESTClient {
 
@@ -21,6 +24,13 @@ public class ProductCRUDRESTClient {
 		 * create a client for the web service using ResteasyClientBuilder and ResteasyWebTarget
 		 */
 		serviceProxy = null;
+		// TODO: 1. create a resteasy client using a clientbuilder instance
+		ResteasyClient client = new ResteasyClientBuilder().build();
+		// TODO: 2. let the client create a web target for the application we want to access
+		ResteasyWebTarget target = client.target("http://localhost:8888/org.dieschnittstelle.ess.jrs/api");
+		// TODO: 3. obtain a proxy from the web target
+		serviceProxy = target.proxy(IProductCRUDService.class);
+
 	}
 
 	public AbstractProduct createProduct(IndividualisedProductItem prod) {

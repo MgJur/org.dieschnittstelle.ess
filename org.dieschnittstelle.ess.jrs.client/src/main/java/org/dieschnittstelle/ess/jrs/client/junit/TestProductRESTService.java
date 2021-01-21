@@ -1,17 +1,14 @@
 package org.dieschnittstelle.ess.jrs.client.junit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
 import org.dieschnittstelle.ess.entities.erp.AbstractProduct;
 import org.dieschnittstelle.ess.entities.erp.IndividualisedProductItem;
 import org.dieschnittstelle.ess.entities.erp.ProductType;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class TestProductRESTService {
 	

@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 import javax.persistence.*;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "productbundle")
 public class ProductBundle implements Serializable {
 
 	protected static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ProductBundle.class);
@@ -16,10 +18,13 @@ public class ProductBundle implements Serializable {
 	 */
 	private static final long serialVersionUID = 1501911067906145681L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
 	// this has been changed to AbstractProduct due to some jboss/jackson serialisation issue
 	// in wildfly 18, which throws an error on unmarshalling, probably due to @JsonTypeInfo
+	@ManyToOne
 	private AbstractProduct product;
 
 	private int units;

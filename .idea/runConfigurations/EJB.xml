@@ -2,7 +2,7 @@
   <configuration default="false" name="EJB" type="JBossConfiguration" factoryName="Local" APPLICATION_SERVER_NAME="JBoss 20.0.1.Final" ALTERNATIVE_JRE_ENABLED="false">
     <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/org.dieschnittstelle.ess.ejb.webapp/" />
     <option name="COMMON_VM_ARGUMENTS" value="-Dresteasy.preferJacksonOverJsonB=true -Dresteasy.jackson.deserialization.whitelist.allowIfBaseType.prefix=* -Dresteasy.jackson.deserialization.whitelist.allowIfSubType.prefix=*" />
-    <option name="UPDATING_POLICY" value="redeploy-artifacts" />
+    <option name="UPDATING_POLICY" value="restart-server" />
     <deployment>
       <artifact name="ejb-earapp:ear">
         <settings />
@@ -12,7 +12,7 @@
       <option name="SERVER" />
       <option name="BINDING_SET_NAME" value="" />
       <option name="DOMAIN" value="false" />
-      <option name="SERVER_GROUP" value="main-server-group" />
+      <option name="SERVER_GROUP" />
       <option name="USERNAME" value="" />
       <option name="CREDENTIAL_ALIAS" />
     </server-settings>

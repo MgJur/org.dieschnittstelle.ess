@@ -1,7 +1,10 @@
 package org.dieschnittstelle.ess.jrs;
 
+import org.dieschnittstelle.ess.entities.erp.AbstractProduct;
 import org.dieschnittstelle.ess.entities.erp.IndividualisedProductItem;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 /*
@@ -18,17 +21,33 @@ import java.util.List;
 /*
  * TODO JRS3: aendern Sie Argument- und Rueckgabetypen der Methoden von IndividualisedProductItem auf AbstractProduct
  */
+@Path("/products")
+//wir empfangen json und geben json zurueck
+@Consumes({MediaType.APPLICATION_JSON})
+@Produces({MediaType.APPLICATION_JSON})
+
 public interface IProductCRUDService {
 
-	public IndividualisedProductItem createProduct(IndividualisedProductItem prod);
+	// IndividualisedProductItem
+	// AbstractProduct
+	// http://localhost:8888/org.dieschnittstelle.ess.jrs/api/touchpoints oder products fue getall
 
-	public List<IndividualisedProductItem> readAllProducts();
+	@POST
+	public AbstractProduct createProduct(AbstractProduct prod);
 
-	public IndividualisedProductItem updateProduct(long id,
-												   IndividualisedProductItem update);
+	@GET
+	public List<AbstractProduct> readAllProducts();
 
-	boolean deleteProduct(long id);
+	@PATCH
+	@Path("/{id}")
+	public AbstractProduct updateProduct(@PathParam("id") long id, AbstractProduct update);
 
-	public IndividualisedProductItem readProduct(long id);
+	@DELETE
+	@Path("/{id}")
+	boolean deleteProduct(@PathParam("id") long id);
+
+	@GET
+	@Path("/{id}")
+	public AbstractProduct readProduct(@PathParam("id") long id);
 			
 }
